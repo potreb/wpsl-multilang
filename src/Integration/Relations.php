@@ -1,13 +1,11 @@
 <?php
 /**
- * Relations class
+ * Relations
  *
- * @package    MultiLang
- * @subpackage \WPSL\MultiLang
- * @since      1.0
+ * @package MultiLang
+ * @since   1.0.0
  */
-
-namespace WPSL\MultiLang;
+namespace WPSL\MultiLang\Integration;
 
 /**
  * Class to retrieve all posts relations
@@ -26,7 +24,7 @@ class Relations {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function __construct( int $post_id ) {
+	public function __construct( $post_id ) {
 		$this->posts = $this->get_relations( $post_id );
 	}
 
@@ -37,7 +35,7 @@ class Relations {
 	 *
 	 * @return array
 	 */
-	private function get_relations( int $object_id ) {
+	private function get_relations( $object_id ) {
 		global $wpdb;
 		$relations = wp_cache_get( 'relations_' . $object_id );
 		if ( false === $relations ) {
@@ -111,24 +109,16 @@ class Relations {
 	 * @return int
 	 */
 	public static function insert(
-		int $object_id,
-		int $object_blog_id,
-		int $post_id,
-		int $post_blog_id,
+		$object_id,
+		$object_blog_id,
+		$post_id,
+		$post_blog_id,
 		$sync = 0
 	) {
 		global $wpdb;
 
-		if ( empty( $object_id ) || empty( $object_blog_id ) || empty( $post_id ) || empty( $post_blog_id ) ) {
-			return false;
-		}
-
-		if ( 0 === $post_id || 0 === $post_blog_id ) {
-			return false;
-		}
-
-		self::delete_exists_relation( $object_id, $object_blog_id, $post_blog_id );
-		$wpdb->show_errors();
+		$relation = self::delete_exists_relation( $object_id, $object_blog_id, $post_blog_id );
+		$wpdb->hide_errors();
 		// phpcs:ignore
 		$insert = $wpdb->replace(
 			$wpdb->mslt,
@@ -148,7 +138,6 @@ class Relations {
 				'%d',
 			]
 		);
-		$wpdb->print_error();
 		return $insert;
 	}
 
@@ -162,7 +151,7 @@ class Relations {
 	 *
 	 * @return bool
 	 */
-	public static function delete( int $object_id, int $object_blog_id, int $post_id, int $post_blog_id ) {
+	public static function delete( $object_id, $object_blog_id, $post_id, $post_blog_id ) {
 		global $wpdb;
 		// phpcs:ignore
 		$wpdb->delete(
@@ -185,44 +174,14 @@ class Relations {
 	}
 
 	/**
-	 * Delete post relation without object_id
-	 *
-	 * @param int $object_blog_id Object blog ID.
-	 * @param int $post_id        Post ID.
-	 * @param int $post_blog_id   Post blog ID.
-	 *
-	 * @return bool
-	 */
-	public static function delete_without_object_id( int $object_blog_id, int $post_id, int $post_blog_id ) {
-		global $wpdb;
-		// phpcs:ignore
-		$wpdb->delete(
-			$wpdb->mslt,
-			array(
-				'object_blog_id' => $object_blog_id,
-				'post_id'        => $post_id,
-				'post_blog_id'   => $post_blog_id,
-			),
-			array(
-				'%d',
-				'%d',
-				'%d',
-			)
-		);
-
-		return true;
-	}
-
-	/**
 	 * Delete relations when post deleted.
 	 *
 	 * @param int $post_id Post ID.
 	 *
 	 * @return bool
 	 */
-	public static function delete_post_relations( int $post_id ) {
+	public static function delete_post_relations( $post_id ) {
 		global $wpdb;
-
 		// phpcs:ignore
 		$wpdb->delete(
 			$wpdb->mslt,

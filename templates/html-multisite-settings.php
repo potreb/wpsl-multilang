@@ -1,8 +1,20 @@
 <?php
 /** @var WPSL\MultiLang\Plugin $plugin */
 
+/**
+ * @var \WPSL\MultiLang\Integration\Integration $plugin;
+ */
 $plugin = $args['plugin'];
+
+/**
+ * @var \WPSL\MultiLang\Integration\MenuPage $parent;
+ */
 $parent = $args['parent'];
+
+/**
+ * @var \WPSL\MultiLang\Integration\NetworkOptions $settings;
+ */
+$settings = $args['settings'];
 ?>
 <form method="post">
 	<?php wp_nonce_field( 'save_settings', 'wpslml_settings_field' ); ?>
@@ -38,7 +50,7 @@ $parent = $args['parent'];
 							<h4><?php esc_html_e( 'Select type', 'wpsl-multilang' ); ?></h4>
 						</th>
 						<td>
-							<?php $select_type_value = $plugin->get_network_option( 'select_type', 2 ); ?>
+							<?php $select_type_value = $settings->get( 'select_type', 2 ); ?>
 							<select name="wpslmu_settings[select_type]">
 								<option value="1" <?php selected( 1, $select_type_value, true ); ?>><?php esc_html_e( 'Select', 'wpsl-multilang' ); ?></option>
 								<option value="2" <?php selected( 2, $select_type_value, true ); ?>><?php esc_html_e( 'Select 2', 'wpsl-multilang' ); ?></option>
@@ -52,7 +64,7 @@ $parent = $args['parent'];
 							<h4><label for="post_in_select"></label><?php esc_html_e( 'Number of post in select', 'wpsl-multilang' ); ?><label></label></h4>
 						</th>
 						<td>
-							<input id="post_in_select" type="number" name="wpslmu_settings[post_in_select]" value="<?php echo esc_attr( (int) $plugin->get_network_option( 'post_in_select', 50 ) ); ?>" min="5" max="100" size="14">
+							<input id="post_in_select" type="number" name="wpslmu_settings[post_in_select]" value="<?php echo esc_attr( (int) $settings->get( 'post_in_select', 50 ) ); ?>" min="5" max="100" size="14">
 						</td>
 
 					</tr>
@@ -72,7 +84,9 @@ $parent = $args['parent'];
 							<h4><?php esc_html_e( 'Attachments', 'wpsl-multilang' ); ?></h4>
 						</th>
 						<td>
-							<?php $checked = $plugin->get_network_option( 'synchronize_attachments', 0 ) === 1 ? 'checked="checked"' : ''; ?>
+							<?php
+							$checked = $settings->get( 'synchronize_attachments:int', 0 ) === 1 ? 'checked="checked"' : '';
+							?>
 							<p>
 								<label>
 									<input <?php echo $checked; ?> type="checkbox" name="wpslmu_settings[synchronize_attachments]" value="1" /> <?php _e( 'Synchronize attachments', 'wpsl-multilang' ); ?>

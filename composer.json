@@ -1,10 +1,14 @@
 {
-  "autoload": {
-    "classmap": [
-      "classes/"
-    ]
-  },
-  "require": {
-
-  }
+    "name": "wpsl/multilanguage",
+    "authors": [
+        {
+            "name": "Piotr",
+            "email": "piotr@potrebka.pl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "WPSL\\MultiLang\\": "src/"
+        }
+    }
 }

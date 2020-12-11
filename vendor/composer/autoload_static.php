@@ -6,22 +6,25 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit09b443a6268b46dafad8f3e1f8d227a3
 {
-    public static $classMap = array (
-        'AbstractPlugin' => __DIR__ . '/../..' . '/classes/class-wpsl-plugin.php',
-        'WPSL\\MultiLang\\Ajax' => __DIR__ . '/../..' . '/classes/class-ajax.php',
-        'WPSL\\MultiLang\\Attachments' => __DIR__ . '/../..' . '/classes/class-attachments.php',
-        'WPSL\\MultiLang\\Frontend' => __DIR__ . '/../..' . '/classes/class-frontend.php',
-        'WPSL\\MultiLang\\Plugin' => __DIR__ . '/../..' . '/classes/class-plugin.php',
-        'WPSL\\MultiLang\\Posts' => __DIR__ . '/../..' . '/classes/class-posts.php',
-        'WPSL\\MultiLang\\Relations' => __DIR__ . '/../..' . '/classes/class-relations.php',
-        'WPSL\\MultiLang\\Settings' => __DIR__ . '/../..' . '/classes/class--settings.php',
-        'WPSL\\MultiLang\\Widget' => __DIR__ . '/../..' . '/classes/class-widget.php',
+    public static $prefixLengthsPsr4 = array (
+        'W' => 
+        array (
+            'WPSL\\MultiLang\\' => 15,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'WPSL\\MultiLang\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit09b443a6268b46dafad8f3e1f8d227a3::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit09b443a6268b46dafad8f3e1f8d227a3::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit09b443a6268b46dafad8f3e1f8d227a3::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

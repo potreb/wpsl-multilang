@@ -4,10 +4,10 @@
  *
  * @package    MultiLanguages
  * @subpackage \WPSL\MultiLang
- * @since      1.0
+ * @since      1.0.0
  */
 
-namespace WPSL\MultiLang;
+namespace WPSL\MultiLang\Integration;
 
 /**
  * Class Attachments
@@ -15,30 +15,26 @@ namespace WPSL\MultiLang;
 class Attachments {
 
 	/**
-	 * \WPSL\MultiLang\Plugin reference
-	 *
-	 * @var \WPSL\MultiLang\Plugin
+	 * @var Integration
 	 */
-	private $plugin;
+	private $integration;
 
 	/**
-	 * Attachments constructor.
-	 *
-	 * @param \WPSL\MultiLang\Plugin $plugin Plugin reference.
+	 * @param Integration $integration
 	 */
-	public function __construct( Plugin $plugin ) {
-		$this->plugin = $plugin;
+	public function __construct( Integration $integration ) {
+		$this->integration = $integration;
 	}
 
 	/**
 	 * Fires hooks
 	 */
 	public function hooks() {
-/*		add_action( 'add_attachment', [ $this, 'synchronize_attachment_data_between_sites' ], 10, 3 );
-		add_filter( 'upload_dir', array( $this, 'set_new_multisite_upload_dir' ) );
-		add_filter( 'delete_attachment', array( $this, 'delete_translation' ), 10, 2 );
-		add_filter( 'admin_post_thumbnail_html', array( $this, 'add_post_thumbnail_synchronize_checkbox' ), 10, 2 );
-		add_filter( 'save_post', array( $this, 'set_thumbnail_to_other_translations' ), 10, 2 );*/
+		/*		add_action( 'add_attachment', [ $this, 'synchronize_attachment_data_between_sites' ], 10, 3 );
+				add_filter( 'upload_dir', array( $this, 'set_new_multisite_upload_dir' ) );
+				add_filter( 'delete_attachment', array( $this, 'delete_translation' ), 10, 2 );
+				add_filter( 'admin_post_thumbnail_html', array( $this, 'add_post_thumbnail_synchronize_checkbox' ), 10, 2 );
+				add_filter( 'save_post', array( $this, 'set_thumbnail_to_other_translations' ), 10, 2 );*/
 	}
 
 	/**
@@ -50,6 +46,7 @@ class Attachments {
 	 */
 	public function add_post_thumbnail_synchronize_checkbox( $content ) {
 		$content .= '<div><label for="thumbnail-synchronize"><input id="thumbnail-synchronize" type="checkbox" name="thumbnail_synchronize" value="1" />' . __( 'Set the thumbnail for other translations!', 'wpsl-multilang' ) . '</label></div>';
+
 		return $content;
 	}
 
@@ -75,15 +72,15 @@ class Attachments {
 	 * @param int $post_id Posi ID.
 	 */
 	public function synchronize_attachment_data_between_sites( $post_id ) {
-		$data = (array) get_post( $post_id );
+		$data        = (array) get_post( $post_id );
 		$relation_id = WPSL\MultiLang\Relations::get_new_relation_id();
 
-		$blog_sites_id  = $this->plugin->get_multisite_languages( true );
-		$parent_blog_id = $this->plugin->get_current_blog_id();
+		$blog_sites_id  = $this->integration->get_multisite_languages( true );
+		$parent_blog_id = $this->integration->get_current_blog_id();
 		$upload_dir     = wp_upload_dir();
 		unset( $data['ID'] );
 
-		WPSL\MultiLang\Relations::insert( 'attachment', $post_id, $relation_id, $this->plugin->get_current_blog_id(), 1 );
+		WPSL\MultiLang\Relations::insert( 'attachment', $post_id, $relation_id, $this->integration->get_current_blog_id(), 1 );
 		$attached_file = get_post_meta( $post_id, '_wp_attached_file', true );
 		add_post_meta( $post_id, \WPSL\MultiLang\Plugin::RELATION_META_KEY, $relation_id );
 
@@ -117,21 +114,21 @@ class Attachments {
 	 * @param int $post_id Post ID.
 	 */
 	public function delete_translation( int $post_id ) {
-		$relation_id  = WPSL\MultiLang\Relations::get_element_relation_id( $post_id, $this->plugin->get_current_blog_id(), 'attachment' );
-		$count = WPSL\MultiLang\Relations::get_translations_count_by_relation_id( $relation_id );
+		$relation_id = WPSL\MultiLang\Relations::get_element_relation_id( $post_id, $this->integration->get_current_blog_id(), 'attachment' );
+		$count       = WPSL\MultiLang\Relations::get_translations_count_by_relation_id( $relation_id );
 
 		/* Do not delete the file if it is on the other pages */
 		if ( $count > 1 ) {
 			add_filter( 'wp_delete_file', '__return_empty_string' );
 		}
-		$blog_id = $this->plugin->get_current_blog_id();
+		$blog_id = $this->integration->get_current_blog_id();
 		WPSL\MultiLang\Relations::delete( $post_id, $blog_id );
 	}
 
 	/**
 	 * Set thumbnail to other translations
 	 *
-	 * @param int    $post_id Post ID.
+	 * @param int    $post_id     Post ID.
 	 * @param object $post_object Post object.
 	 */
 	public function set_thumbnail_to_other_translations( $post_id, $post_object ) {
@@ -139,7 +136,13 @@ class Attachments {
 			return;
 		}
 
-		if ( in_array( $post_object->post_type, array( 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'user_request' ), true ) ) {
+		if ( in_array( $post_object->post_type, array(
+			'revision',
+			'nav_menu_item',
+			'custom_css',
+			'customize_changeset',
+			'user_request'
+		), true ) ) {
 			return;
 		}
 
@@ -159,7 +162,7 @@ class Attachments {
 	/**
 	 * Set thumbnail to post
 	 *
-	 * @param int $post_id Post ID.
+	 * @param int $post_id       Post ID.
 	 * @param int $_thumbnail_id Attachment ID.
 	 *
 	 * @see set_thumbnail_to_other_translations
@@ -167,10 +170,10 @@ class Attachments {
 	private function set_thumbnail( int $post_id, int $_thumbnail_id ) {
 		if ( $post_id && $_thumbnail_id ) {
 			$translation_attachments = ( new WPSL\MultiLang\Relations( $_thumbnail_id, 'attachment' ) )->get_blog_translations();
-			unset( $translation_attachments[ $this->plugin->get_current_blog_id() ] );
+			unset( $translation_attachments[ $this->integration->get_current_blog_id() ] );
 
 			$translation_posts = ( new WPSL\MultiLang\Relations( $post_id, 'post' ) )->get_blog_translations();
-			unset( $translation_posts[ $this->plugin->get_current_blog_id() ] );
+			unset( $translation_posts[ $this->integration->get_current_blog_id() ] );
 
 			foreach ( $translation_posts as $blog_id => $translation_post ) {
 				remove_action( 'save_post', array( $this, 'set_thumbnail_to_other_translations' ) );

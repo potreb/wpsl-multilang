@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: MultiSite Languages
- * Plugin URI: wpsmartlab.com
- * Description: This plugin creates a multi language platform from a network of sites
- * Version: 1.1.3
+ * Plugin Name: Multi Language Network for WooCommerce
+ * Plugin URI: https://wpsmartlab.com
+ * Description: This plugin creates a multi language platform for WooCommerce with a network of sites.
+ * Version: 1.0.0
  * Author: Piotr Potrebka
- * Author URI: wpsmartlab.com
+ * Author URI: https://wpsmartlab.com
  * Text Domain: wpsl-multilang
  * Domain Path: /languages
  *
@@ -27,191 +27,41 @@
  * @package Multilang
  */
 
-use \WPSL\MultiLang\Plugin;
-use \WPSL\MultiLang\Ajax;
-use \WPSL\MultiLang\Settings;
-use \WPSL\MultiLang\Attachments;
-use \WPSL\MultiLang\Posts;
-use \WPSL\MultiLang\Widget;
-use \WPSL\MultiLang\Frontend;
-
-/**
- * Main WPSL_MultiLang Class.
- *
- * @class MultiLanguages
- */
-final class WPSL_MultiLang {
-
-	/**
-	 * Plugin
-	 *
-	 * @var \WPSL\MultiLang\Plugin
-	 */
-	private $plugin;
-
-	/**
-	 * Plugin
-	 *
-	 * @var Frontend
-	 */
-	private $frontend;
-
-	const TABLE_NAME = 'multi_langual';
-
-	const SETTING_NAME = 'wpslmu_settings';
-
-	/**
-	 * MultiLanguages Constructor.
-	 */
-	public function __construct() {}
-
-	/**
-	 * Init plugin
-	 */
-	public function init() {
-		if ( is_multisite() ) {
-			$this->define_table_prefix();
-			$this->load_dependencies();
-			$this->autoloader();
-			$this->init_hooks();
-		}
-	}
-
-	/**
-	 * Load dependencies
-	 */
-	private function load_dependencies() {
-		require_once __DIR__ . '/classes/helper.php';
-	}
-
-	/**
-	 * Define constant if not already set.
-	 *
-	 * @param string      $name  Constant name.
-	 * @param string|bool $value Constant value.
-	 */
-	private function define( $name, $value ) {
-		if ( ! defined( $name ) ) {
-			define( $name, $value );
-		}
-	}
-
-	/**
-	 * Define table prefix.
-	 */
-	private function define_table_prefix() {
-		global $wpdb;
-		$dbprefix   = $wpdb->get_blog_prefix( SITE_ID_CURRENT_SITE );
-		$wpdb->mslt = $dbprefix . self::TABLE_NAME;
-	}
-
-	/**
-	 * Use autoloader to load all classes.
-	 */
-	private function autoloader() {
-		require_once __DIR__ . '/vendor/autoload.php';
-	}
-
-	/**
-	 * Init hooks
-	 */
-	private function init_hooks() {
-		add_action( 'widgets_init', array( $this, 'multi_languages_widget' ) );
-
-		$this->plugin = new Plugin( __FILE__ );
-		$this->plugin->hooks();
-
-		$ajax = new Ajax( $this->plugin );
-		$ajax->hooks();
-
-		$menu_page = new Settings( $this->plugin );
-		$menu_page->hooks();
-
-		if ( empty( $this->plugin->get_multisite_languages() ) ) {
-			add_action( 'admin_notices', array( $this, 'admin_notice_no_defined_languages' ), 1 );
-		}
-
-		$this->frontend = new Frontend( $this->plugin );
-		$this->frontend->hooks();
-
-		$posts = new Posts( $this->plugin );
-		$posts->hooks();
-
-		$posts = new Attachments( $this->plugin );
-		$posts->hooks();
-	}
-
-	/**
-	 * Add notice if plugin is not configure.
-	 */
-	public function admin_notice_no_defined_languages() {
-		$settings_url = network_admin_url( 'admin.php?page=' . Settings::MENU_SLUG );
-		$current_user = wp_get_current_user();
-		$allowed_tags = wp_kses_allowed_html();
-
-		printf(
-			/* translators: 1: user name 2: settings url */
-			'<div class="notice notice-error is-dismissible"><p>' . wp_kses( __( 'Hello %1$s. Thank you for using our plugin. Go to the plugin <a href="%2$s">settings to add languages</a>.', 'wpsl-multilang' ), $allowed_tags ) . ' </p></div>',
-			esc_html( $current_user->display_name ),
-			esc_url( $settings_url )
-		);
-	}
-
-	/**
-	 * Register language widget.
-	 */
-	public function multi_languages_widget() {
-		$widget = new Widget( $this->plugin, $this->frontend );
-		register_widget( $widget );
-	}
-
-	/**
-	 * Install plugin.
-	 *
-	 * Install table into database and some other variables.
-	 *
-	 * @return bool
-	 */
-	public static function install() {
-		global $wpdb;
-		if ( ! is_multisite() || ! defined( 'SITE_ID_CURRENT_SITE' ) ) {
-			return false;
-		}
-		$charset_collate = $wpdb->get_charset_collate();
-		$installed       = get_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_install', 0 );
-		if ( ! $installed ) {
-			$sql = "
-				CREATE TABLE {$wpdb->mslt} (
-				  object_id bigint(20) NOT NULL,
-				  object_blog_id tinyint(2) NOT NULL,
-				  post_id bigint(20) NOT NULL,
-				  post_blog_id tinyint(2) NOT NULL,
-				  sync int(11) NOT NULL,
-				  PRIMARY KEY  ( object_id, post_id )
-				) $charset_collate;
-			";
-			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-			dbDelta( $sql );
-			$wpdb->query( "ALTER TABLE {$wpdb->mslt} ADD UNIQUE KEY `REL` (object_blog_id,post_id,post_blog_id)" ); //phpcs:ignore
-			update_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_install', 1 );
-			update_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_activation_date', 1 );
-
-			return true;
-		}
-
-		return false;
-	}
-
-}
-
 register_activation_hook( __FILE__, array( 'WPSL_MultiLang', 'install' ) );
 
-// Init plugin!
-add_action(
-	'plugins_loaded',
-	function () {
-		$plugin = new WPSL_MultiLang();
-		$plugin->init();
-	},
-	10
-);
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} // Exit if accessed directly
+
+
+/* THESE TWO VARIABLES CAN BE CHANGED AUTOMATICALLY */
+$plugin_version           = '1.0.0';
+$plugin_release_timestamp = '2020-11-16 13:42';
+
+$plugin_name        = __( 'Multi Language Network for WooCommerce', 'wpsl-multilang' );
+$plugin_desc        = __( 'This plugin creates a multi language platform with a network of sites.', 'wpsl-multilang' );
+$plugin_uri         = __( 'https://wpsmartlab.com', 'wpsl-multilang' );
+$plugin_text_domain = 'wpsl-multilang';
+$plugin_file        = __FILE__;
+$plugin_dir         = dirname( __FILE__ );
+
+add_action( 'plugins_loaded', function () use ( $plugin_name, $plugin_desc, $plugin_file, $plugin_text_domain, $plugin_version ) {
+	$plugin_info['plugin_file']     = $plugin_file;
+	$plugin_info['plugin_basename'] = plugin_basename( $plugin_file );
+	$plugin_info['plugin_name']     = $plugin_name;
+	$plugin_info['plugin_desc']     = $plugin_desc;
+	$plugin_info['plugin_path']     = trailingslashit( plugin_dir_path( $plugin_file ) );
+	$plugin_info['plugin_url']      = plugin_dir_url( $plugin_file );
+	$plugin_info['text_domain']     = $plugin_text_domain;
+	$plugin_info['plugin_version']  = $plugin_version;
+
+	require_once __DIR__ . '/vendor/autoload.php';
+
+	register_activation_hook( __FILE__, array( 'WPSL\MultiLang\Integration\Database', 'install' ) );
+
+	/**
+	 * Fire main plugin class.
+	 */
+	( new \WPSL\MultiLang\Plugin( $plugin_info ) )->hooks();
+
+}, 100 );

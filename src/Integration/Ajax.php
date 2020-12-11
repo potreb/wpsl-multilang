@@ -4,10 +4,10 @@
  *
  * @package    MultiLang
  * @subpackage \WPSL\MultiLang
- * @since      1.0
+ * @since      1.0.0
  */
 
-namespace WPSL\MultiLang;
+namespace WPSL\MultiLang\Integration;
 
 /**
  * Class Ajax
@@ -15,19 +15,15 @@ namespace WPSL\MultiLang;
 class Ajax {
 
 	/**
-	 * \WPSL\MultiLang\Plugin reference
-	 *
-	 * @var \WPSL\MultiLang\Plugin
+	 * @var Integration
 	 */
-	private $plugin;
+	private $integration;
 
 	/**
-	 * WPSL_MultiSiteLanguageAjax constructor.
-	 *
-	 * @param \WPSL\MultiLang\Plugin $plugin Plugin reference.
+	 * @param Integration $integration
 	 */
-	public function __construct( Plugin $plugin ) {
-		$this->plugin = $plugin;
+	public function __construct( Integration $integration ) {
+		$this->integration = $integration;
 	}
 
 	/**
@@ -46,20 +42,16 @@ class Ajax {
 	public function wp_ajax_wpsl_search_translation_post() {
 		$attr         = wp_unslash( $_POST ); //phpcs:ignore
 		$post_blog_id = (int) $attr['post_blog_id'];
-		$term         = trim( $attr['term'] );
+		$term         = $attr['term'];
 		$post_type    = $attr['post_type'];
 
-		if ( empty( $term ) ) {
-			wp_send_json_error( 'empty' );
-		}
-
-		$blogs_id = $this->plugin->get_blog_sites_id();
+		$blogs_id = $this->integration->get_blog_sites_id();
 
 		if ( ! isset( $blogs_id[ $post_blog_id ] ) ) {
 			wp_send_json_error( array( 'error' => '100' ) );
 		}
 		switch_to_blog( $post_blog_id );
-		$args  = array(
+		$args = array(
 			'post_type' => $post_type,
 			's'         => $term,
 		);
