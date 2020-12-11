@@ -79,7 +79,10 @@ class MenuPage {
 	private function defined_setting_fields() {
 		return [
 			'multisite_languages',
-			'supported_post_types',
+			'excluded_post_types',
+			'select_type',
+			'post_in_select',
+			'excluded_post_types',
 			'synchronize_attachments',
 		];
 	}
@@ -89,10 +92,9 @@ class MenuPage {
 	 */
 	public function save_settings() {
 		if (
-			isset( $_POST['multi-languages-nonce-settings'] ) &&
-			wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['multi-languages-nonce-settings'] ) ), 'multi-languages-settings' )
+			isset( $_POST['wpslml_settings_field'] ) &&
+			wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpslml_settings_field'] ) ), 'save_settings' )
 		) {
-
 			foreach ( $this->defined_setting_fields() as $setting ) {
 				$value = $_POST[ NetworkOptions::SLUG ][ $setting ];
 				$this->settings->set( $setting, $value );
@@ -156,9 +158,9 @@ class MenuPage {
 	 */
 	public function post_type_select() {
 		$multiple   = true;
-		$value      = $this->settings->get( 'supported_post_types', array( 'post', 'page' ) );
+		$value      = $this->settings->get( 'excluded_post_types', [] );
 		$post_types = get_post_types( array( 'public' => true ), 'names' );
-		$output     = '<select class="wpsl-multilangual-post-type-select" name="wpslmu_settings[supported_post_types][]" multiple="multiple">';
+		$output     = '<select class="wpsl-multilangual-post-type-select" name="wpslmu_settings[excluded_post_types][]" multiple="multiple">';
 		foreach ( $post_types as $post_type_slug => $post_type_name ) {
 			$obj = get_post_type_object( $post_type_slug );
 			if ( $multiple ) {

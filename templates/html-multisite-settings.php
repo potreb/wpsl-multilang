@@ -22,27 +22,43 @@ $settings = $args['settings'];
 		<h2><?php esc_html_e( 'Settings' ); ?></h2>
 		<div id="postbody">
 
-			<table class="wp-list-table widefat fixed striped posts wpsl-settings">
+			<table class="form-table">
 				<tbody>
 					<tr>
 						<th><h4><?php esc_html_e( 'Languages', 'wpsl-multilang' ); ?></h4></th>
 						<td>
-							<?php foreach ( $plugin->get_blog_sites_id() as $blog_id => $url ) : ?>
-								<?php
-								$siteurl   = get_blog_option( $blog_id, 'siteurl', 'en' );
-								$lang      = $plugin->get_full_lang( $blog_id );
-								$blog_name = get_blog_option( $blog_id, 'blogname', 'en' );
-								?>
-								<h4>
-									<label for="blog-lang-<?php echo esc_attr( $blog_id ); ?>"><?php echo esc_html( $blog_name ); ?></label>
-								</h4>
-								<p><?php echo esc_html( $siteurl ); ?></p>
-								<select id="blog-lang-<?php echo esc_attr( $blog_id ); ?>"
-								        name="wpslmu_settings[multisite_languages][<?php echo esc_attr( $blog_id ); ?>]">
-									<?php echo $parent->language_select_options( esc_attr( $lang ) ); ?>
-								</select>
-								<hr/>
-							<?php endforeach; ?>
+							<table class="wp-list-table widefat fixed striped table-view-list posts">
+								<thead>
+								<tr>
+									<td id="cb">Active</td id="cb">
+									<th><?php esc_html_e( 'Site Title', 'wpsl-multilang' ); ?></th>
+									<th><?php esc_html_e( 'Site URL', 'wpsl-multilang' ); ?></th>
+									<th style="width: 80%"><?php esc_html_e( 'Language', 'wpsl-multilang' ); ?></th>
+								</tr>
+								</thead>
+								<tbody>
+								<?php foreach ( $plugin->get_blog_sites_id() as $blog_id => $url ) : ?>
+								<tr>
+									<th width="10"><input type="checkbox" value="yes" /></th>
+									<?php
+									$siteurl   = get_blog_option( $blog_id, 'siteurl', 'en' );
+									$lang      = $plugin->get_full_lang( $blog_id );
+									$blog_name = get_blog_option( $blog_id, 'blogname', 'en' );
+									?>
+									<td class="title column-title has-row-actions column-primary page-title">
+										<label for="blog-lang-<?php echo esc_attr( $blog_id ); ?>"><?php echo esc_html( $blog_name ); ?></label>
+									</td>
+									<td><?php echo esc_html( $siteurl ); ?></td>
+									<td>
+									<select id="blog-lang-<?php echo esc_attr( $blog_id ); ?>"
+											name="wpslmu_settings[multisite_languages][<?php echo esc_attr( $blog_id ); ?>]">
+										<?php echo $parent->language_select_options( esc_attr( $lang ) ); ?>
+									</select>
+									</td>
+								</tr>
+								<?php endforeach; ?>
+								</tbody>
+							</table>
 						</td>
 					</tr>
 					<tr>
@@ -70,11 +86,11 @@ $settings = $args['settings'];
 					</tr>
 					<tr>
 						<th>
-							<h4><?php esc_html_e( 'Post types', 'wpsl-multilang' ); ?></h4>
+							<h4><?php esc_html_e( 'Exclude Post Types', 'wpsl-multilang' ); ?></h4>
 						</th>
 						<td>
 							<?php echo $parent->post_type_select(); // phpcs:ignore ?>
-							<div class="wpsl-description"><?php esc_html_e( 'Select supported post types.', 'wpsl-multilang' ); ?></div>
+							<div class="wpsl-description"><?php esc_html_e( 'Exclude post types for translation.', 'wpsl-multilang' ); ?></div>
 						</td>
 
 					</tr>

@@ -73,7 +73,7 @@ class Posts {
 	 * Add language meta box in post admin
 	 */
 	public function add_multi_languages_meta_box() {
-		$screens = $this->settings->get( 'supported_post_types', array( 'post', 'page' ) );
+		$screens = $this->settings->get( 'excluded_post_types', array( 'post', 'page' ) );
 		foreach ( $screens as $screen ) {
 			add_meta_box(
 				'MultiLanguages_post_box',

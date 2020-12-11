@@ -16,7 +16,7 @@ class Database {
 
 	const SETTING_NAME = 'wpslmu_settings';
 
-	const TABLE_NAME = 'multi_langual';
+	const TABLE_NAME = 'wpslml_object_relations';
 
 	public function __construct() {
 		$this->define_table_prefix();
@@ -38,11 +38,14 @@ class Database {
 		if ( ! is_multisite() || ! defined( 'SITE_ID_CURRENT_SITE' ) ) {
 			return false;
 		}
+
+		$table_name = $wpdb->get_blog_prefix() . self::TABLE_NAME;
 		$charset_collate = $wpdb->get_charset_collate();
-		$installed       = get_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_install', 0 );
+
+		$installed       = get_site_option( self::SETTING_NAME . '_install', 0 );
 		if ( ! $installed ) {
 			$sql = "
-				CREATE TABLE " . self::TABLE_NAME . " (
+				CREATE TABLE ".$table_name." (
 				  object_id bigint(20) NOT NULL,
 				  object_blog_id tinyint(2) NOT NULL,
 				  post_id bigint(20) NOT NULL,
@@ -53,9 +56,9 @@ class Database {
 			";
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql );
-			$wpdb->query( 'ALTER TABLE ' . self::TABLE_NAME . ' ADD UNIQUE KEY `REL` (object_blog_id,post_id,post_blog_id)' ); //phpcs:ignore
+			$wpdb->query( 'ALTER TABLE ' . $table_name . ' ADD UNIQUE KEY `REL` (object_blog_id,post_id,post_blog_id)' ); //phpcs:ignore
 			update_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_install', 1 );
-			update_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_activation_date', 1 );
+			update_network_option( SITE_ID_CURRENT_SITE, self::SETTING_NAME . '_activation_date', strtotime( 'NOW' ) );
 		}
 	}
 

@@ -27,8 +27,6 @@
  * @package Multilang
  */
 
-register_activation_hook( __FILE__, array( 'WPSL_MultiLang', 'install' ) );
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
@@ -45,6 +43,10 @@ $plugin_text_domain = 'wpsl-multilang';
 $plugin_file        = __FILE__;
 $plugin_dir         = dirname( __FILE__ );
 
+require_once __DIR__ . '/vendor/autoload.php';
+
+register_activation_hook( __FILE__, array( 'WPSL\MultiLang\Integration\Database', 'install' ) );
+
 add_action( 'plugins_loaded', function () use ( $plugin_name, $plugin_desc, $plugin_file, $plugin_text_domain, $plugin_version ) {
 	$plugin_info['plugin_file']     = $plugin_file;
 	$plugin_info['plugin_basename'] = plugin_basename( $plugin_file );
@@ -54,10 +56,6 @@ add_action( 'plugins_loaded', function () use ( $plugin_name, $plugin_desc, $plu
 	$plugin_info['plugin_url']      = plugin_dir_url( $plugin_file );
 	$plugin_info['text_domain']     = $plugin_text_domain;
 	$plugin_info['plugin_version']  = $plugin_version;
-
-	require_once __DIR__ . '/vendor/autoload.php';
-
-	register_activation_hook( __FILE__, array( 'WPSL\MultiLang\Integration\Database', 'install' ) );
 
 	/**
 	 * Fire main plugin class.
