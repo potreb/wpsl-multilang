@@ -31,7 +31,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-
 /* THESE TWO VARIABLES CAN BE CHANGED AUTOMATICALLY */
 $plugin_version           = '1.0.0';
 $plugin_release_timestamp = '2020-11-16 13:42';
